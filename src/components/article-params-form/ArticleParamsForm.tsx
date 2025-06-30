@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import clsx from 'clsx';
+import { useRef, useState } from 'react';
 import {
 	ArticleStateType,
 	backgroundColors,
@@ -16,20 +17,29 @@ import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 import { Separator } from 'src/ui/separator';
 import styles from './ArticleParamsForm.module.scss';
 type Props = {
-	setArticleProps: (sttates: ArticleStateType) => void;
+	setArticleProps: (states: ArticleStateType) => void;
+	states: ArticleStateType;
 };
 
-export const ArticleParamsForm = (props: Props) => {
-	const { setArticleProps } = props;
-	const [isOpen, setIsOpen] = useState(false);
-	const [inputsData, setInputsData] = useState(defaultArticleState);
+export const ArticleParamsForm = ({ setArticleProps, states }: Props) => {
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [inputsData, setInputsData] = useState(states);
 	const asideRef = useRef<HTMLDivElement | null>(null);
 
 	useOutsideClickClose({
-		isOpen: isOpen,
+		isOpen: isModalOpen,
 		rootRef: asideRef,
-		onChange: setIsOpen,
+		onChange: setIsModalOpen,
 	});
+	const setNewInputData = <T extends keyof ArticleStateType>(
+		dataType: T,
+		value: ArticleStateType[T]
+	) => {
+		setInputsData((prevInputsData) => ({
+			...prevInputsData,
+			[dataType]: value,
+		}));
+	};
 	const submitForm = (e: React.FormEvent) => {
 		e.preventDefault();
 		setArticleProps(inputsData);
@@ -39,22 +49,21 @@ export const ArticleParamsForm = (props: Props) => {
 		setInputsData(defaultArticleState);
 		setArticleProps(defaultArticleState);
 	};
-	useLayoutEffect(() => {
-		const aside = asideRef.current;
-		isOpen && aside?.classList.add(styles.container_open);
-		return () => {
-			aside?.classList.remove(styles.container_open);
-		};
-	}, [isOpen]);
 	return (
 		<>
 			<ArrowButton
-				isOpen={isOpen}
+				isOpen={isModalOpen}
 				onClick={() => {
-					setIsOpen(!isOpen);
+					setIsModalOpen(!isModalOpen);
 				}}
 			/>
-			<aside className={styles.container} ref={asideRef}>
+			<aside
+				className={
+					isModalOpen
+						? clsx(styles.container, styles.container_open)
+						: styles.container
+				}
+				ref={asideRef}>
 				<form className={styles.form} onSubmit={submitForm} onReset={clearForm}>
 					<h2 className={styles.title}>Задайте параметры</h2>
 					<Select
@@ -63,10 +72,7 @@ export const ArticleParamsForm = (props: Props) => {
 						selected={inputsData.fontFamilyOption}
 						placeholder={inputsData.fontFamilyOption.title}
 						onChange={(value) => {
-							setInputsData((prevInputsData) => ({
-								...prevInputsData,
-								fontFamilyOption: (prevInputsData.fontFamilyOption = value),
-							}));
+							setNewInputData('fontFamilyOption', value);
 						}}
 					/>
 					<RadioGroup
@@ -74,10 +80,7 @@ export const ArticleParamsForm = (props: Props) => {
 						options={fontSizeOptions}
 						selected={inputsData.fontSizeOption}
 						onChange={(value) => {
-							setInputsData((prevInputsData) => ({
-								...prevInputsData,
-								fontSizeOption: (prevInputsData.fontSizeOption = value),
-							}));
+							setNewInputData('fontSizeOption', value);
 						}}
 						title='размер шрифта'
 					/>
@@ -87,10 +90,7 @@ export const ArticleParamsForm = (props: Props) => {
 						selected={inputsData.fontColor}
 						placeholder={inputsData.fontColor.title}
 						onChange={(value) => {
-							setInputsData((prevInputsData) => ({
-								...prevInputsData,
-								fontColor: (prevInputsData.fontColor = value),
-							}));
+							setNewInputData('fontColor', value);
 						}}
 					/>
 					<Separator />
@@ -100,10 +100,7 @@ export const ArticleParamsForm = (props: Props) => {
 						selected={inputsData.backgroundColor}
 						placeholder={inputsData.backgroundColor.title}
 						onChange={(value) => {
-							setInputsData((prevInputsData) => ({
-								...prevInputsData,
-								backgroundColor: (prevInputsData.backgroundColor = value),
-							}));
+							setNewInputData('backgroundColor', value);
 						}}
 					/>
 					<Select
@@ -112,10 +109,7 @@ export const ArticleParamsForm = (props: Props) => {
 						selected={inputsData.contentWidth}
 						placeholder={inputsData.contentWidth.title}
 						onChange={(value) => {
-							setInputsData((prevInputsData) => ({
-								...prevInputsData,
-								contentWidth: (prevInputsData.contentWidth = value),
-							}));
+							setNewInputData('contentWidth', value);
 						}}
 					/>
 					<div className={styles.bottomContainer}>
