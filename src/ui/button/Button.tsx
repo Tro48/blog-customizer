@@ -2,7 +2,6 @@ import { Text } from 'src/ui/text';
 
 import styles from './Button.module.scss';
 import { clsx } from 'clsx';
-
 export const Button = ({
 	title,
 	onClick,
